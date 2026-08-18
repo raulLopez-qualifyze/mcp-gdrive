@@ -50,6 +50,11 @@ export async function search(args) {
         pageToken: args.pageToken,
         orderBy: "modifiedTime desc",
         fields: "nextPageToken, files(id, name, mimeType, modifiedTime, size)",
+        // Qualifyze fork: upstream searches only My Drive. These three make the API
+        // return Shared Drives (Team Drives) and "Shared with me" items too.
+        corpora: "allDrives",
+        includeItemsFromAllDrives: true,
+        supportsAllDrives: true,
     });
     const fileList = res.data.files
         ?.map((file) => `${file.id} ${file.name} (${file.mimeType})`)

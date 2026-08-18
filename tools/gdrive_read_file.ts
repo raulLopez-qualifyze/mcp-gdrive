@@ -47,6 +47,7 @@ async function readGoogleDriveFile(
   const file = await drive.files.get({
     fileId,
     fields: "mimeType,name",
+    supportsAllDrives: true, // Qualifyze fork: allow reading Shared Drive files
   });
 
   // For Google Docs/Sheets/etc we need to export
@@ -85,7 +86,7 @@ async function readGoogleDriveFile(
 
   // For regular files download content
   const res = await drive.files.get(
-    { fileId, alt: "media" },
+    { fileId, alt: "media", supportsAllDrives: true }, // Qualifyze fork
     { responseType: "arraybuffer" },
   );
   const mimeType = file.data.mimeType || "application/octet-stream";
