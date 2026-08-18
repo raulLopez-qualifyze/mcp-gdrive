@@ -30,6 +30,12 @@ export interface GDriveReadFileInput {
   fileId: string;
 }
 
+export interface GDriveListInput {
+  driveId?: string;
+  pageToken?: string;
+  pageSize?: number;
+}
+
 export interface GSheetsUpdateCellInput {
   fileId: string;
   range: string;
