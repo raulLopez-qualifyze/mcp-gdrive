@@ -90,9 +90,26 @@ async function readGoogleDriveFile(
     { responseType: "arraybuffer" },
   );
   const mimeType = file.data.mimeType || "application/octet-stream";
+  const content = Buffer.from(res.data as ArrayBuffer);
+
+  // Qualifyze fork: extract PDF text server-side. Otherwise a PDF returns as a
+  // base64 blob the model can't read (and a big one blows the token budget).
+  if (mimeType === "application/pdf") {
+    const { PDFParse } = await import("pdf-parse");
+    const parser = new PDFParse({ data: content });
+    try {
+      const { text } = await parser.getText();
+      return {
+        name: file.data.name || fileId,
+        contents: { mimeType: "text/plain", text },
+      };
+    } finally {
+      await parser.destroy();
+    }
+  }
+
   const isText =
     mimeType.startsWith("text/") || mimeType === "application/json";
-  const content = Buffer.from(res.data as ArrayBuffer);
 
   return {
     name: file.data.name || fileId,
