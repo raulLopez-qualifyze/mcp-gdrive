@@ -2,16 +2,29 @@ import { authenticate } from "@google-cloud/local-auth";
 import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 export const SCOPES = [
   "https://www.googleapis.com/auth/drive.readonly",
   "https://www.googleapis.com/auth/spreadsheets",
 ];
 
-// Get credentials directory from environment variable or use default
-const CREDS_DIR =
+// Get credentials directory from environment variable or use default.
+// Expand a leading "~" ourselves — the managed config ships "~/.config/mcp-gdrive"
+// but the app launches npx with cwd "/", and Node never expands ~, so an unexpanded
+// path resolves to "/~/.config/..." and the token is never found.
+const CREDS_DIR = expandHome(
   process.env.GDRIVE_CREDS_DIR ||
-  path.join(path.dirname(new URL(import.meta.url).pathname), "../../../");
+    path.join(path.dirname(new URL(import.meta.url).pathname), "../../../"),
+);
+
+function expandHome(p: string): string {
+  if (p === "~") return os.homedir();
+  if (p.startsWith("~/") || p.startsWith("~\\")) {
+    return path.join(os.homedir(), p.slice(2));
+  }
+  return p;
+}
 
 
 // Ensure the credentials directory exists
